@@ -1,1 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script nonce="2ZUVh/MTNSiJjVzkBy3l3w" src="https://chatgpt.com/__DLD__36e557fb72f077aafce6ad4a8f8b74d77d9a9878d95481aed45d095a54970fa8/resources/setup.js"></script><script nonce="G3BGj2THj0uIV8lpVI9iSA" src="https://chatgpt.com/__DLD__36e557fb72f077aafce6ad4a8f8b74d77d9a9878d95481aed45d095a54970fa8/resources/frontend.min.js" server="https://localhost:51689" id="__dld-frontend__" async defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match-Up</title>
+<style>
+  :root{
+    --ink:#233142;
+    --muted:#64748b;
+    --paper:#f7f8fb;
+    --panel:#ffffff;
+    --border:#d9dee8;
+    --accent:#3b82f6;
+    --good:#16a34a;
+    --bad:#dc2626;
+    --definition:#f4f7ff;
+    --image:#fffaf2;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial, Helvetica, sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,#f8fafc 0%,#eef2f7 100%);
+  }
+  .game{
+    width:min(1180px,96vw);
+    margin:0 auto;
+    padding:22px 10px 32px;
+  }
+  header{text-align:center;margin-bottom:14px}
+  h1{
+    margin:0;
+    font-size:clamp(28px,4vw,42px);
+    letter-spacing:.04em;
+  }
+  .instructions{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:16px;
+  }
+  .stats{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:16px auto 20px;
+  }
+  .stat{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:8px 15px;
+    font-size:14px;
+    font-weight:700;
+  }
+  .stat span{font-variant-numeric:tabular-nums}
+  .section{
+    background:rgba(255,255,255,.9);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:16px;
+    margin:0 auto 18px;
+  }
+  .section-title{
+    text-align:center;
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:.12em;
+    margin-bottom:12px;
+  }
+  .section-subtitle{
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    margin:-7px 0 13px;
+  }
+  .definition-area{background:var(--definition)}
+  .image-area{background:var(--image)}
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:14px;
+    max-width:900px;
+    margin:0 auto;
+  }
+  .card{
+    aspect-ratio:1/1;
+    border:0;
+    padding:0;
+    background:transparent;
+    perspective:900px;
+    cursor:pointer;
+    min-width:0;
+    border-radius:18px;
+  }
+  .card:focus-visible{
+    outline:4px solid #60a5fa;
+    outline-offset:3px;
+  }
+  .card[disabled]{cursor:default}
+  .card-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    transform-style:preserve-3d;
+    transition:transform .48s cubic-bezier(.2,.7,.2,1);
+  }
+  .card.flipped .card-inner{transform:rotateY(180deg)}
+  .card-face{
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    overflow:hidden;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    box-shadow:0 4px 10px rgba(15,23,42,.12);
+  }
+  .card-back img,.card-front img{
+    width:100%;
+    height:100%;
+    display:block;
+    object-fit:cover;
+  }
+  .card-front{
+    transform:rotateY(180deg);
+    background:white;
+    border:1px solid var(--border);
+  }
+  .card-back{
+    background:white;
+    border:1px solid var(--border);
+  }
+  .card.selected .card-face{
+    box-shadow:0 0 0 4px var(--accent),0 7px 16px rgba(15,23,42,.18);
+  }
+  .card.matched .card-face{
+    box-shadow:0 0 0 4px var(--good),0 7px 16px rgba(22,163,74,.16);
+  }
+  .card.matched{cursor:default}
+  .card.matched .card-inner{transform:rotateY(180deg)}
+  .card.matched::after{
+    content:"✓ MATCHED";
+    position:absolute;
+    left:50%;
+    bottom:8px;
+    transform:translateX(-50%);
+    background:var(--good);
+    color:white;
+    font-size:11px;
+    font-weight:800;
+    padding:4px 8px;
+    border-radius:999px;
+    pointer-events:none;
+    z-index:5;
+  }
+  .status{
+    min-height:28px;
+    text-align:center;
+    font-weight:800;
+    font-size:15px;
+    margin:2px 0 16px;
+  }
+  .status.good{color:var(--good)}
+  .status.bad{color:var(--bad)}
+  .status.neutral{color:var(--muted)}
+  .controls{text-align:center}
+  button.restart{
+    border:0;
+    border-radius:999px;
+    background:var(--ink);
+    color:white;
+    padding:11px 20px;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  button.restart:hover{filter:brightness(1.08)}
+  .result{
+    display:none;
+    text-align:center;
+    background:white;
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:20px;
+    margin:12px auto 0;
+    max-width:500px;
+  }
+  .result.show{display:block}
+  .result h2{margin:0 0 8px}
+  .result p{margin:5px 0;color:var(--muted)}
+  .score{font-size:28px;font-weight:900;color:var(--ink)}
+  @media(max-width:760px){
+    .game{width:98vw;padding:15px 4px 24px}
+    .section{padding:10px;border-radius:16px}
+    .cards{gap:9px}
+    .card-face,.card{border-radius:13px}
+    .card.matched::after{font-size:8px;bottom:4px;padding:3px 5px}
+    .instructions{font-size:14px}
+  }
+  @media(max-width:500px){
+    .cards{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+    .stats{gap:6px}
+    .stat{padding:6px 9px;font-size:12px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .card-inner{transition:none}
+  }
+</style>
+</head>
+<body>
+<main class="game" id="matchupGame">
+  <header>
+    <h1>MATCH-UP</h1>
+    <p class="instructions">Read a definition, then find the picture that matches it.</p>
+    <div class="stats" aria-label="Game statistics">
+      <div class="stat">Matches: <span id="matches">0</span>/10</div>
+      <div class="stat">Moves: <span id="moves">0</span></div>
+      <div class="stat">Mistakes: <span id="mistakes">0</span></div>
+      <div class="stat">Score: <span id="score">1000</span></div>
+    </div>
+  </header>
 
+  <div class="status neutral" id="status" aria-live="polite">Choose a definition to begin.</div>
+
+  <section class="section definition-area" aria-labelledby="definitionsTitle">
+    <div class="section-title" id="definitionsTitle">DEFINITIONS • A–J</div>
+    <div class="section-subtitle">Choose a definition first.</div>
+    <div class="cards" id="definitionCards"></div>
+  </section>
+
+  <section class="section image-area" aria-labelledby="imagesTitle">
+    <div class="section-title" id="imagesTitle">IMAGES • 1–10</div>
+    <div class="section-subtitle">Find the picture that matches your definition.</div>
+    <div class="cards" id="imageCards"></div>
+  </section>
+
+  <div class="controls">
+    <button class="restart" id="restart" type="button">New Game</button>
+  </div>
+
+  <section class="result" id="result" aria-live="polite">
+    <h2>🎉 All 10 Matches!</h2>
+    <p id="resultSummary"></p>
+    <p class="score">Score: <span id="finalScore">0</span></p>
+  </section>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const letters = ["A","B","C","D","E","F","G","H","I","J"];
+  const numbers = [1,2,3,4,5,6,7,8,9,10];
+
+  /*
+    The game assumes these files exist in /images:
+      1.png ... 10.png
+      A.png ... J.png
+      1_back.png
+      A_back.png
+
+    If your definition images use different filenames, change the
+    definitionFile() function below.
+  */
+
+  const definitionFile = letter => `images/${letter}.png`;
+  const imageFile = number => `images/${number}.png`;
+
+  const definitionCards = document.getElementById("definitionCards");
+  const imageCards = document.getElementById("imageCards");
+  const matchesEl = document.getElementById("matches");
+  const movesEl = document.getElementById("moves");
+  const mistakesEl = document.getElementById("mistakes");
+  const scoreEl = document.getElementById("score");
+  const statusEl = document.getElementById("status");
+  const restartBtn = document.getElementById("restart");
+  const resultEl = document.getElementById("result");
+  const resultSummary = document.getElementById("resultSummary");
+  const finalScore = document.getElementById("finalScore");
+
+  let selectedDefinition = null;
+  let selectedDefinitionCard = null;
+  let matches = 0;
+  let moves = 0;
+  let mistakes = 0;
+  let score = 1000;
+  let locked = false;
+
+  function shuffle(array) {
+    const copy = [...array];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function createCard(type, id) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "card";
+    button.dataset.type = type;
+    button.dataset.id = String(id);
+
+    const inner = document.createElement("span");
+    inner.className = "card-inner";
+
+    const back = document.createElement("span");
+    back.className = "card-face card-back";
+
+    const backImg = document.createElement("img");
+    backImg.src = type === "definition" ? "images/A_back.png" : "images/1_back.png";
+    backImg.alt = type === "definition"
+      ? `Definition card ${id}`
+      : `Image card ${id}`;
+    back.appendChild(backImg);
+
+    const front = document.createElement("span");
+    front.className = "card-face card-front";
+
+    const frontImg = document.createElement("img");
+    frontImg.src = type === "definition"
+      ? definitionFile(id)
+      : imageFile(id);
+    frontImg.alt = type === "definition"
+      ? `Definition ${id}`
+      : `Image ${id}`;
+    front.appendChild(frontImg);
+
+    inner.appendChild(back);
+    inner.appendChild(front);
+    button.appendChild(inner);
+
+    button.addEventListener("click", () => handleCardClick(button));
+
+    return button;
+  }
+
+  function renderCards() {
+    definitionCards.innerHTML = "";
+    imageCards.innerHTML = "";
+
+    shuffle(letters).forEach(letter => {
+      definitionCards.appendChild(createCard("definition", letter));
+    });
+
+    shuffle(numbers).forEach(number => {
+      imageCards.appendChild(createCard("image", number));
+    });
+  }
+
+  function flip(card) {
+    card.classList.add("flipped");
+  }
+
+  function unflip(card) {
+    card.classList.remove("flipped", "selected");
+  }
+
+  function setStatus(message, kind = "neutral") {
+    statusEl.textContent = message;
+    statusEl.className = `status ${kind}`;
+  }
+
+  function handleCardClick(card) {
+    if (locked || card.classList.contains("matched")) return;
+
+    const type = card.dataset.type;
+    const id = card.dataset.id;
+
+    // A definition must be selected before an image can be chosen.
+    if (type === "definition") {
+      if (selectedDefinitionCard === card) return;
+
+      if (selectedDefinitionCard) {
+        unflip(selectedDefinitionCard);
+      }
+
+      selectedDefinition = id;
+      selectedDefinitionCard = card;
+      flip(card);
+      card.classList.add("selected");
+
+      setStatus(`Definition ${id} selected. Now find its matching picture.`);
+      return;
+    }
+
+    // Image clicked before a definition.
+    if (!selectedDefinitionCard) {
+      setStatus("Choose a definition first.", "bad");
+      return;
+    }
+
+    // Don't allow clicking the same image twice.
+    if (card.classList.contains("flipped")) return;
+
+    flip(card);
+    moves++;
+    movesEl.textContent = moves;
+
+    locked = true;
+
+    const isMatch = Number(selectedDefinition.charCodeAt(0) - 64) === Number(id);
+
+    if (isMatch) {
+      matches++;
+      score += 100;
+      matchesEl.textContent = matches;
+      scoreEl.textContent = score;
+
+      selectedDefinitionCard.classList.remove("selected");
+      selectedDefinitionCard.classList.add("matched");
+      card.classList.add("matched");
+
+      setStatus(`✓ Match! ${selectedDefinition} matches ${id}.`, "good");
+
+      selectedDefinition = null;
+      selectedDefinitionCard = null;
+      locked = false;
+
+      if (matches === 10) finishGame();
+    } else {
+      mistakes++;
+      score = Math.max(0, score - 25);
+      mistakesEl.textContent = mistakes;
+      scoreEl.textContent = score;
+
+      setStatus("Not a match. Try again!", "bad");
+
+      window.setTimeout(() => {
+        unflip(card);
+        unflip(selectedDefinitionCard);
+        selectedDefinition = null;
+        selectedDefinitionCard = null;
+        locked = false;
+        setStatus("Choose a definition to continue.");
+      }, 900);
+    }
+  }
+
+  function finishGame() {
+    let bonus = 0;
+    if (mistakes === 0) bonus += 250;
+    if (moves <= 15) bonus += 250;
+    else if (moves <= 20) bonus += 150;
+
+    score += bonus;
+    scoreEl.textContent = score;
+    finalScore.textContent = score;
+
+    const mistakeText = mistakes === 1 ? "1 mistake" : `${mistakes} mistakes`;
+    resultSummary.textContent =
+      `You found every match in ${moves} moves with ${mistakeText}.`;
+
+    resultEl.classList.add("show");
+    setStatus("🎉 Excellent! You found all 10 matches!", "good");
+  }
+
+  function startGame() {
+    selectedDefinition = null;
+    selectedDefinitionCard = null;
+    matches = 0;
+    moves = 0;
+    mistakes = 0;
+    score = 1000;
+    locked = false;
+
+    matchesEl.textContent = "0";
+    movesEl.textContent = "0";
+    mistakesEl.textContent = "0";
+    scoreEl.textContent = "1000";
+    resultEl.classList.remove("show");
+
+    renderCards();
+    setStatus("Choose a definition to begin.");
+  }
+
+  restartBtn.addEventListener("click", startGame);
+  startGame();
+})();
+</script>
+</body>
+</html>
