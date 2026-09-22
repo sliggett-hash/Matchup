@@ -267,7 +267,7 @@
   */
 
   const definitionFile = letter => `images/${letter}.png`;
-  const imageFile = number => `images/${number}.png`;
+  const imageFile = number => `images/${String(number).padStart(2, "0")}.png`;
 
   const definitionCards = document.getElementById("definitionCards");
   const imageCards = document.getElementById("imageCards");
