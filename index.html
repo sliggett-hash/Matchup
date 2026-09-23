@@ -12,11 +12,9 @@
       --border:#d9dee8;
       --accent:#2563eb;
       --good:#15803d;
-      --bad:#b91c1c;
+      --bad:#dc2626;
       --definition-panel:#f4f7ff;
       --image-panel:#fffaf2;
-      --definition-back:#a61b1b;
-      --image-back:#174ea6;
     }
 
     *{ box-sizing:border-box; }
@@ -69,8 +67,6 @@
       font-weight:700;
     }
 
-    .stat span{ font-variant-numeric:tabular-nums; }
-
     .status{
       min-height:28px;
       text-align:center;
@@ -90,7 +86,7 @@
       padding:12px 14px;
       border:2px solid var(--bad);
       border-radius:12px;
-      background:#fff;
+      background:white;
       color:var(--bad);
       font-weight:700;
       text-align:center;
@@ -133,14 +129,21 @@
 
     .card{
       position:relative;
-      aspect-ratio:1 / 1;
-      border:0;
-      padding:0;
-      background:transparent;
-      perspective:900px;
-      cursor:pointer;
+      aspect-ratio:1/1;
       min-width:0;
-      border-radius:18px;
+      padding:0;
+      border:2px solid var(--border);
+      border-radius:16px;
+      overflow:hidden;
+      background:white;
+      cursor:pointer;
+      box-shadow:0 3px 8px rgba(15,23,42,.10);
+      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+
+    .card:hover:not(:disabled){
+      transform:translateY(-2px);
+      box-shadow:0 7px 16px rgba(15,23,42,.15);
     }
 
     .card:focus-visible{
@@ -148,101 +151,35 @@
       outline-offset:3px;
     }
 
-    .card:disabled{ cursor:default; }
-
-    .card-inner{
-      position:relative;
+    .card img{
+      display:block;
       width:100%;
       height:100%;
-      transform-style:preserve-3d;
-      transition:transform .42s cubic-bezier(.2,.7,.2,1);
-    }
-
-    .card.flipped .card-inner{
-      transform:rotateY(180deg);
-    }
-
-    .card-face{
-      position:absolute;
-      inset:0;
-      border-radius:18px;
-      overflow:hidden;
-      backface-visibility:hidden;
-      -webkit-backface-visibility:hidden;
-      box-shadow:0 4px 10px rgba(15,23,42,.16);
-    }
-
-    /* These backs are drawn entirely with CSS.
-       No A_back.png or 1_back.png is needed. */
-    .card-back{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      color:white;
-      border:4px solid rgba(255,255,255,.8);
-      box-shadow:
-        inset 0 0 0 3px rgba(255,255,255,.18),
-        0 4px 10px rgba(15,23,42,.18);
-      text-align:center;
-      padding:10px;
-    }
-
-    .definition-card .card-back{
-      background:
-        radial-gradient(circle at center, rgba(255,255,255,.12) 0 18%, transparent 19%),
-        linear-gradient(135deg,#8f1717,#bd2626);
-    }
-
-    .image-card .card-back{
-      background:
-        radial-gradient(circle at center, rgba(255,255,255,.12) 0 18%, transparent 19%),
-        linear-gradient(135deg,#123b80,#2060c0);
-    }
-
-    .back-symbol{
-      display:block;
-      font-size:clamp(28px,5vw,58px);
-      font-weight:900;
-      line-height:1;
-      text-shadow:0 2px 4px rgba(0,0,0,.2);
-    }
-
-    .back-label{
-      display:block;
-      margin-top:8px;
-      font-size:clamp(9px,1.5vw,15px);
-      font-weight:900;
-      letter-spacing:.14em;
-    }
-
-    .card-front{
-      transform:rotateY(180deg);
-      background:white;
-      border:1px solid var(--border);
-    }
-
-    .card-front img{
-      width:100%;
-      height:100%;
-      display:block;
       object-fit:contain;
       background:white;
     }
 
-    .card.selected .card-face{
-      box-shadow:0 0 0 4px var(--accent),0 7px 16px rgba(15,23,42,.18);
+    .card.selected{
+      border-color:var(--accent);
+      box-shadow:0 0 0 4px rgba(37,99,235,.28), 0 7px 16px rgba(15,23,42,.15);
     }
 
-    .card.matched .card-face{
-      box-shadow:0 0 0 4px var(--good),0 7px 16px rgba(22,163,74,.16);
+    .card.matched{
+      border-color:var(--good);
+      box-shadow:0 0 0 4px rgba(21,128,61,.25), 0 7px 16px rgba(15,23,42,.13);
+      cursor:default;
+    }
+
+    .card.wrong{
+      border-color:var(--bad);
+      box-shadow:0 0 0 4px rgba(220,38,38,.25);
     }
 
     .card.matched::after{
       content:"✓ MATCH";
       position:absolute;
       left:50%;
-      bottom:8px;
+      bottom:7px;
       transform:translateX(-50%);
       background:var(--good);
       color:white;
@@ -250,9 +187,12 @@
       font-weight:800;
       padding:4px 8px;
       border-radius:999px;
-      pointer-events:none;
-      z-index:5;
       white-space:nowrap;
+      pointer-events:none;
+    }
+
+    .card:disabled{
+      opacity:.78;
     }
 
     .controls{
@@ -271,7 +211,9 @@
       cursor:pointer;
     }
 
-    .restart:hover{ filter:brightness(1.08); }
+    .restart:hover{
+      filter:brightness(1.08);
+    }
 
     .result{
       display:none;
@@ -285,9 +227,9 @@
     }
 
     .result.show{ display:block; }
-
     .result h2{ margin:0 0 8px; }
     .result p{ margin:5px 0; color:var(--muted); }
+
     .score{
       font-size:28px;
       font-weight:900;
@@ -295,35 +237,45 @@
     }
 
     @media(max-width:760px){
-      .game{ width:98vw; padding:15px 4px 24px; }
-      .section{ padding:10px; border-radius:16px; }
-      .cards{ gap:9px; }
-      .card-face,.card{ border-radius:13px; }
+      .game{
+        width:98vw;
+        padding:15px 4px 24px;
+      }
+
+      .section{
+        padding:10px;
+        border-radius:16px;
+      }
+
+      .cards{
+        gap:8px;
+      }
+
+      .card{
+        border-radius:11px;
+      }
+
       .card.matched::after{
         font-size:8px;
         bottom:4px;
         padding:3px 5px;
       }
-      .instructions{ font-size:14px; }
     }
 
     @media(max-width:500px){
       .cards{
         grid-template-columns:repeat(5,minmax(0,1fr));
-        gap:5px;
+        gap:4px;
       }
 
-      .stats{ gap:6px; }
-      .stat{ padding:6px 9px; font-size:12px; }
-
-      .back-label{
-        font-size:7px;
-        letter-spacing:.08em;
+      .stats{
+        gap:6px;
       }
-    }
 
-    @media(prefers-reduced-motion:reduce){
-      .card-inner{ transition:none; }
+      .stat{
+        padding:6px 9px;
+        font-size:12px;
+      }
     }
   </style>
 </head>
@@ -332,9 +284,9 @@
   <main class="game">
     <header>
       <h1>MATCH-UP</h1>
-      <p class="instructions">Choose a definition, then find the picture that matches it.</p>
+      <p class="instructions">Choose a definition, then choose the picture that matches it.</p>
 
-      <div class="stats" aria-label="Game statistics">
+      <div class="stats">
         <div class="stat">Matches: <span id="matches">0</span>/10</div>
         <div class="stat">Moves: <span id="moves">0</span></div>
         <div class="stat">Mistakes: <span id="mistakes">0</span></div>
@@ -348,15 +300,15 @@
       Choose a definition to begin.
     </div>
 
-    <section class="section definition-area" aria-labelledby="definitionsTitle">
-      <div class="section-title" id="definitionsTitle">DEFINITIONS • A–J</div>
-      <div class="section-subtitle">Choose any red card.</div>
+    <section class="section definition-area">
+      <div class="section-title">DEFINITIONS • A–J</div>
+      <div class="section-subtitle">Click the definition you want to match.</div>
       <div class="cards" id="definitionCards"></div>
     </section>
 
-    <section class="section image-area" aria-labelledby="imagesTitle">
-      <div class="section-title" id="imagesTitle">IMAGES • 1–10</div>
-      <div class="section-subtitle">Then choose a blue picture card.</div>
+    <section class="section image-area">
+      <div class="section-title">IMAGES • 1–10</div>
+      <div class="section-subtitle">Then click the matching picture.</div>
       <div class="cards" id="imageCards"></div>
     </section>
 
@@ -375,21 +327,17 @@
     (() => {
       "use strict";
 
-      /*
-        ANSWER KEY
-        If your actual matches are different, only change these ten lines.
-      */
       const PAIRS = [
-        { definition: "A", image: "01" },
-        { definition: "B", image: "02" },
-        { definition: "C", image: "03" },
-        { definition: "D", image: "04" },
-        { definition: "E", image: "05" },
-        { definition: "F", image: "06" },
-        { definition: "G", image: "07" },
-        { definition: "H", image: "08" },
-        { definition: "I", image: "09" },
-        { definition: "J", image: "10" }
+        { definition:"A", image:"01" },
+        { definition:"B", image:"02" },
+        { definition:"C", image:"03" },
+        { definition:"D", image:"04" },
+        { definition:"E", image:"05" },
+        { definition:"F", image:"06" },
+        { definition:"G", image:"07" },
+        { definition:"H", image:"08" },
+        { definition:"I", image:"09" },
+        { definition:"J", image:"10" }
       ];
 
       const definitionCardsEl = document.getElementById("definitionCards");
@@ -405,7 +353,7 @@
       const finalScoreEl = document.getElementById("finalScore");
       const loadErrorEl = document.getElementById("loadError");
 
-      let selectedDefinitionId = null;
+      let selectedDefinition = null;
       let selectedDefinitionCard = null;
       let matches = 0;
       let moves = 0;
@@ -414,10 +362,10 @@
       let locked = false;
       const failedImages = new Set();
 
-      function shuffle(items) {
+      function shuffle(items){
         const copy = [...items];
 
-        for (let i = copy.length - 1; i > 0; i--) {
+        for(let i = copy.length - 1; i > 0; i--){
           const j = Math.floor(Math.random() * (i + 1));
           [copy[i], copy[j]] = [copy[j], copy[i]];
         }
@@ -425,25 +373,29 @@
         return copy;
       }
 
-      function setStatus(message, kind = "neutral") {
+      function setStatus(message, kind="neutral"){
         statusEl.textContent = message;
         statusEl.className = `status ${kind}`;
       }
 
-      function reportImageFailure(filename) {
+      function reportImageFailure(filename){
         failedImages.add(filename);
-        const list = [...failedImages].join(", ");
+
         loadErrorEl.innerHTML =
-          `Could not load: <strong>${list}</strong><br>` +
-          `These files should be inside the repository's <strong>images</strong> folder.`;
+          `Could not load: <strong>${[...failedImages].join(", ")}</strong>`;
+
         loadErrorEl.classList.add("show");
       }
 
-      function makeFrontImage(type, id) {
-        const filename = `${id}.png`;
-        const img = document.createElement("img");
+      function createCard(type, id){
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "card";
+        card.dataset.type = type;
+        card.dataset.id = id;
 
-        img.src = `./images/${filename}`;
+        const img = document.createElement("img");
+        img.src = `./images/${id}.png`;
         img.alt =
           type === "definition"
             ? `Definition ${id}`
@@ -453,51 +405,17 @@
 
         img.addEventListener(
           "error",
-          () => reportImageFailure(filename),
+          () => reportImageFailure(`${id}.png`),
           { once:true }
         );
 
-        return img;
+        card.appendChild(img);
+        card.addEventListener("click", () => handleCardClick(card));
+
+        return card;
       }
 
-      function createCard(type, id) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className =
-          `card ${type === "definition" ? "definition-card" : "image-card"}`;
-        button.dataset.type = type;
-        button.dataset.id = id;
-
-        const inner = document.createElement("span");
-        inner.className = "card-inner";
-
-        const back = document.createElement("span");
-        back.className = "card-face card-back";
-
-        const symbol = document.createElement("span");
-        symbol.className = "back-symbol";
-        symbol.textContent = "?";
-
-        const label = document.createElement("span");
-        label.className = "back-label";
-        label.textContent =
-          type === "definition" ? "DEFINITION" : "PICTURE";
-
-        back.append(symbol, label);
-
-        const front = document.createElement("span");
-        front.className = "card-face card-front";
-        front.appendChild(makeFrontImage(type, id));
-
-        inner.append(back, front);
-        button.appendChild(inner);
-
-        button.addEventListener("click", () => handleCardClick(button));
-
-        return button;
-      }
-
-      function renderCards() {
+      function renderCards(){
         definitionCardsEl.replaceChildren();
         imageCardsEl.replaceChildren();
 
@@ -510,47 +428,34 @@
         });
       }
 
-      function flip(card) {
-        card.classList.add("flipped");
-      }
-
-      function unflip(card) {
-        card.classList.remove("flipped", "selected");
-      }
-
-      function expectedImageFor(definitionId) {
-        const pair = PAIRS.find(item => item.definition === definitionId);
+      function expectedImageFor(definitionId){
+        const pair = PAIRS.find(pair => pair.definition === definitionId);
         return pair ? pair.image : null;
       }
 
-      function selectDefinition(card) {
-        if (selectedDefinitionCard && selectedDefinitionCard !== card) {
-          unflip(selectedDefinitionCard);
+      function selectDefinition(card){
+        if(selectedDefinitionCard){
+          selectedDefinitionCard.classList.remove("selected");
         }
 
-        selectedDefinitionId = card.dataset.id;
+        selectedDefinition = card.dataset.id;
         selectedDefinitionCard = card;
-
-        flip(card);
         card.classList.add("selected");
 
         setStatus(
-          `Definition ${selectedDefinitionId} selected. Now find its matching picture.`
+          `Definition ${selectedDefinition} selected. Choose its matching picture.`
         );
       }
 
-      function handleCardClick(card) {
-        if (locked || card.classList.contains("matched")) return;
+      function handleCardClick(card){
+        if(locked || card.classList.contains("matched")) return;
 
-        const type = card.dataset.type;
-
-        if (type === "definition") {
-          if (card === selectedDefinitionCard) return;
+        if(card.dataset.type === "definition"){
           selectDefinition(card);
           return;
         }
 
-        if (!selectedDefinitionCard) {
+        if(!selectedDefinitionCard){
           setStatus("Choose a definition first.", "bad");
           return;
         }
@@ -558,13 +463,10 @@
         moves += 1;
         movesEl.textContent = String(moves);
 
-        flip(card);
-        locked = true;
-
         const isMatch =
-          card.dataset.id === expectedImageFor(selectedDefinitionId);
+          card.dataset.id === expectedImageFor(selectedDefinition);
 
-        if (isMatch) {
+        if(isMatch){
           matches += 1;
           score += 100;
 
@@ -579,15 +481,14 @@
           card.disabled = true;
 
           setStatus(
-            `Match! Definition ${selectedDefinitionId} matches picture ${Number(card.dataset.id)}.`,
+            `Match! Definition ${selectedDefinition} matches picture ${Number(card.dataset.id)}.`,
             "good"
           );
 
-          selectedDefinitionId = null;
+          selectedDefinition = null;
           selectedDefinitionCard = null;
-          locked = false;
 
-          if (matches === PAIRS.length) {
+          if(matches === PAIRS.length){
             finishGame();
           }
 
@@ -600,26 +501,28 @@
         mistakesEl.textContent = String(mistakes);
         scoreEl.textContent = String(score);
 
-        setStatus("Not a match. Try another picture.", "bad");
+        locked = true;
+        card.classList.add("wrong");
+
+        setStatus(
+          `Not a match. Definition ${selectedDefinition} is still selected.`,
+          "bad"
+        );
 
         window.setTimeout(() => {
-          unflip(card);
+          card.classList.remove("wrong");
           locked = false;
-
-          setStatus(
-            `Definition ${selectedDefinitionId} is still selected. Try another picture.`
-          );
-        }, 900);
+        }, 500);
       }
 
-      function finishGame() {
+      function finishGame(){
         let bonus = 0;
 
-        if (mistakes === 0) bonus += 250;
+        if(mistakes === 0) bonus += 250;
 
-        if (moves <= 15) {
+        if(moves <= 15){
           bonus += 250;
-        } else if (moves <= 20) {
+        } else if(moves <= 20){
           bonus += 150;
         }
 
@@ -638,8 +541,8 @@
         setStatus("Excellent! You found all 10 matches!", "good");
       }
 
-      function startGame() {
-        selectedDefinitionId = null;
+      function startGame(){
+        selectedDefinition = null;
         selectedDefinitionCard = null;
         matches = 0;
         moves = 0;
