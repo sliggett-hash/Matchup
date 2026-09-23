@@ -138,12 +138,18 @@
       background:white;
       cursor:pointer;
       box-shadow:0 3px 8px rgba(15,23,42,.10);
-      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      z-index:1;
+      transform-origin:center;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .12s ease;
     }
 
-    .card:hover:not(:disabled){
-      transform:translateY(-2px);
-      box-shadow:0 7px 16px rgba(15,23,42,.15);
+    /* Desktop/laptop hover zoom for readability */
+    @media (hover:hover) and (pointer:fine){
+      .card:hover{
+        transform:scale(1.75);
+        z-index:100;
+        box-shadow:0 18px 36px rgba(15,23,42,.28);
+      }
     }
 
     .card:focus-visible{
