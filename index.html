@@ -28,26 +28,33 @@
     }
 
     .game{
-      width:min(1180px,96vw);
+      width:min(1080px,98vw);
       margin:0 auto;
-      padding:22px 10px 32px;
+      padding:10px 8px 18px;
     }
 
     header{
       text-align:center;
-      margin-bottom:14px;
+      margin-bottom:8px;
     }
 
     h1{
       margin:0;
-      font-size:clamp(28px,4vw,42px);
+      font-size:clamp(26px,3.4vw,38px);
       letter-spacing:.04em;
     }
 
     .instructions{
-      margin:6px 0 0;
+      margin:4px 0 0;
       color:var(--muted);
-      font-size:16px;
+      font-size:15px;
+    }
+
+    .scoring-note{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
     }
 
     .stats{
@@ -55,14 +62,14 @@
       justify-content:center;
       flex-wrap:wrap;
       gap:10px;
-      margin:16px auto 20px;
+      margin:10px auto 12px;
     }
 
     .stat{
       background:white;
       border:1px solid var(--border);
       border-radius:999px;
-      padding:8px 15px;
+      padding:7px 13px;
       font-size:14px;
       font-weight:700;
     }
@@ -72,7 +79,7 @@
       text-align:center;
       font-weight:800;
       font-size:15px;
-      margin:2px 0 16px;
+      margin:2px 0 9px;
     }
 
     .status.good{ color:var(--good); }
@@ -97,8 +104,9 @@
     .section{
       border:1px solid var(--border);
       border-radius:20px;
-      padding:16px;
-      margin:0 auto 18px;
+      padding:10px;
+      margin:0 auto 10px;
+      overflow:visible;
     }
 
     .definition-area{ background:var(--definition-panel); }
@@ -109,21 +117,21 @@
       font-size:15px;
       font-weight:800;
       letter-spacing:.12em;
-      margin-bottom:12px;
+      margin-bottom:9px;
     }
 
     .section-subtitle{
       text-align:center;
       color:var(--muted);
       font-size:13px;
-      margin:-7px 0 13px;
+      margin:-6px 0 9px;
     }
 
     .cards{
       display:grid;
       grid-template-columns:repeat(5,minmax(0,1fr));
-      gap:14px;
-      max-width:900px;
+      gap:8px;
+      max-width:760px;
       margin:0 auto;
     }
 
@@ -143,13 +151,33 @@
       transition:transform .18s ease, box-shadow .18s ease, border-color .12s ease;
     }
 
-    /* Desktop/laptop hover zoom for readability */
+    /* Chromebook/laptop hover zoom.
+       Edge cards zoom inward so they stay inside the Schoology frame. */
     @media (hover:hover) and (pointer:fine){
       .card:hover{
-        transform:scale(1.75);
+        transform:scale(1.85);
         z-index:100;
-        box-shadow:0 18px 36px rgba(15,23,42,.28);
+        box-shadow:0 18px 36px rgba(15,23,42,.30);
       }
+
+      /* First row opens downward; second row opens upward. */
+      .card:nth-child(-n+5){ transform-origin:center top; }
+      .card:nth-child(n+6){ transform-origin:center bottom; }
+
+      /* Outer columns open toward the middle of the page. */
+      .card:nth-child(5n+1){ transform-origin:left center; }
+      .card:nth-child(5n){ transform-origin:right center; }
+
+      /* Corners combine both directions. */
+      .card:nth-child(1){ transform-origin:left top; }
+      .card:nth-child(5){ transform-origin:right top; }
+      .card:nth-child(6){ transform-origin:left bottom; }
+      .card:nth-child(10){ transform-origin:right bottom; }
+    }
+
+    /* Slightly gentler zoom if Schoology gives the page a narrow frame. */
+    @media (hover:hover) and (pointer:fine) and (max-width:900px){
+      .card:hover{ transform:scale(1.65); }
     }
 
     .card:focus-visible{
@@ -236,6 +264,30 @@
     .result h2{ margin:0 0 8px; }
     .result p{ margin:5px 0; color:var(--muted); }
 
+    .result-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin:12px 0 10px;
+    }
+
+    .result-grid > div{
+      background:#f8fafc;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:8px 5px;
+      font-size:14px;
+    }
+
+    .bonus-summary{
+      font-weight:700;
+    }
+
+    .score-stat{
+      background:#eef6ff;
+      border-color:#b9d7ff;
+    }
+
     .score{
       font-size:28px;
       font-weight:900;
@@ -291,12 +343,15 @@
     <header>
       <h1>MATCH-UP</h1>
       <p class="instructions">Choose a definition, then choose the picture that matches it.</p>
+      <p class="scoring-note">Accuracy matters most • Build a streak • Faster finishes earn a bonus</p>
 
       <div class="stats">
         <div class="stat">Matches: <span id="matches">0</span>/10</div>
-        <div class="stat">Moves: <span id="moves">0</span></div>
         <div class="stat">Mistakes: <span id="mistakes">0</span></div>
-        <div class="stat">Score: <span id="score">1000</span></div>
+        <div class="stat">Accuracy: <span id="accuracy">100</span>%</div>
+        <div class="stat">Streak: <span id="streak">0</span></div>
+        <div class="stat">Time: <span id="timer">0:00</span></div>
+        <div class="stat score-stat">Score: <span id="score">1000</span></div>
       </div>
     </header>
 
@@ -323,9 +378,15 @@
     </div>
 
     <section class="result" id="result" aria-live="polite">
-      <h2>All 10 Matches!</h2>
+      <h2 id="resultTitle">All 10 Matches!</h2>
       <p id="resultSummary"></p>
-      <p class="score">Score: <span id="finalScore">0</span></p>
+      <div class="result-grid">
+        <div><strong>Time</strong><br><span id="finalTime">0:00</span></div>
+        <div><strong>Accuracy</strong><br><span id="finalAccuracy">100%</span></div>
+        <div><strong>Best Streak</strong><br><span id="bestStreak">0</span></div>
+      </div>
+      <p id="bonusSummary" class="bonus-summary"></p>
+      <p class="score">Final Score: <span id="finalScore">0</span></p>
     </section>
   </main>
 
@@ -346,26 +407,59 @@
         { definition:"J", image:"10" }
       ];
 
+      /*
+        SCORING
+        -------
+        Starting score:        1000
+        Correct match:         +100
+        Wrong guess:           -100
+        Consecutive-correct
+        streak bonus:          +20, +40, +60, then +80 max per match
+        Perfect game:          +250
+        Speed bonus:           up to +300; loses 1 point per elapsed second
+      */
+
+      const START_SCORE = 1000;
+      const CORRECT_POINTS = 100;
+      const WRONG_PENALTY = 100;
+      const PERFECT_BONUS = 250;
+      const MAX_SPEED_BONUS = 300;
+
       const definitionCardsEl = document.getElementById("definitionCards");
       const imageCardsEl = document.getElementById("imageCards");
       const matchesEl = document.getElementById("matches");
-      const movesEl = document.getElementById("moves");
       const mistakesEl = document.getElementById("mistakes");
+      const accuracyEl = document.getElementById("accuracy");
+      const streakEl = document.getElementById("streak");
+      const timerEl = document.getElementById("timer");
       const scoreEl = document.getElementById("score");
       const statusEl = document.getElementById("status");
       const restartBtn = document.getElementById("restart");
       const resultEl = document.getElementById("result");
+      const resultTitleEl = document.getElementById("resultTitle");
       const resultSummaryEl = document.getElementById("resultSummary");
       const finalScoreEl = document.getElementById("finalScore");
+      const finalTimeEl = document.getElementById("finalTime");
+      const finalAccuracyEl = document.getElementById("finalAccuracy");
+      const bestStreakEl = document.getElementById("bestStreak");
+      const bonusSummaryEl = document.getElementById("bonusSummary");
       const loadErrorEl = document.getElementById("loadError");
 
       let selectedDefinition = null;
       let selectedDefinitionCard = null;
       let matches = 0;
-      let moves = 0;
       let mistakes = 0;
-      let score = 1000;
+      let score = START_SCORE;
+      let currentStreak = 0;
+      let bestStreak = 0;
       let locked = false;
+
+      let timerStarted = false;
+      let timerFinished = false;
+      let startTime = 0;
+      let elapsedSeconds = 0;
+      let timerInterval = null;
+
       const failedImages = new Set();
 
       function shuffle(items){
@@ -379,9 +473,64 @@
         return copy;
       }
 
+      function formatTime(totalSeconds){
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function startTimer(){
+        if(timerStarted) return;
+
+        timerStarted = true;
+        timerFinished = false;
+        startTime = performance.now();
+
+        timerInterval = window.setInterval(updateTimer, 250);
+      }
+
+      function updateTimer(){
+        if(!timerStarted || timerFinished) return;
+
+        elapsedSeconds = Math.floor((performance.now() - startTime) / 1000);
+        timerEl.textContent = formatTime(elapsedSeconds);
+      }
+
+      function stopTimer(){
+        if(!timerStarted) return;
+
+        updateTimer();
+        timerFinished = true;
+
+        if(timerInterval){
+          window.clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+
       function setStatus(message, kind="neutral"){
         statusEl.textContent = message;
         statusEl.className = `status ${kind}`;
+      }
+
+      function calculateAccuracy(){
+        const attempts = matches + mistakes;
+        if(attempts === 0) return 100;
+
+        return Math.round((matches / attempts) * 100);
+      }
+
+      function updateStats(){
+        matchesEl.textContent = String(matches);
+        mistakesEl.textContent = String(mistakes);
+        accuracyEl.textContent = String(calculateAccuracy());
+        streakEl.textContent = String(currentStreak);
+        scoreEl.textContent = String(score);
+      }
+
+      function streakBonusFor(streak){
+        if(streak <= 1) return 0;
+        return Math.min(80, (streak - 1) * 20);
       }
 
       function reportImageFailure(filename){
@@ -440,6 +589,8 @@
       }
 
       function selectDefinition(card){
+        startTimer();
+
         if(selectedDefinitionCard){
           selectedDefinitionCard.classList.remove("selected");
         }
@@ -466,18 +617,17 @@
           return;
         }
 
-        moves += 1;
-        movesEl.textContent = String(moves);
-
         const isMatch =
           card.dataset.id === expectedImageFor(selectedDefinition);
 
         if(isMatch){
           matches += 1;
-          score += 100;
+          currentStreak += 1;
+          bestStreak = Math.max(bestStreak, currentStreak);
 
-          matchesEl.textContent = String(matches);
-          scoreEl.textContent = String(score);
+          const streakBonus = streakBonusFor(currentStreak);
+          const pointsEarned = CORRECT_POINTS + streakBonus;
+          score += pointsEarned;
 
           selectedDefinitionCard.classList.remove("selected");
           selectedDefinitionCard.classList.add("matched");
@@ -486,10 +636,16 @@
           card.classList.add("matched");
           card.disabled = true;
 
-          setStatus(
-            `Match! Definition ${selectedDefinition} matches picture ${Number(card.dataset.id)}.`,
-            "good"
-          );
+          updateStats();
+
+          if(streakBonus > 0){
+            setStatus(
+              `Correct! +${CORRECT_POINTS} and +${streakBonus} streak bonus. ${currentStreak} in a row!`,
+              "good"
+            );
+          } else {
+            setStatus(`Correct! +${CORRECT_POINTS} points.`, "good");
+          }
 
           selectedDefinition = null;
           selectedDefinitionCard = null;
@@ -502,16 +658,16 @@
         }
 
         mistakes += 1;
-        score = Math.max(0, score - 25);
+        currentStreak = 0;
+        score = Math.max(0, score - WRONG_PENALTY);
 
-        mistakesEl.textContent = String(mistakes);
-        scoreEl.textContent = String(score);
+        updateStats();
 
         locked = true;
         card.classList.add("wrong");
 
         setStatus(
-          `Not a match. Definition ${selectedDefinition} is still selected.`,
+          `Not a match. -${WRONG_PENALTY} points. Your definition is still selected.`,
           "bad"
         );
 
@@ -522,52 +678,80 @@
       }
 
       function finishGame(){
-        let bonus = 0;
+        stopTimer();
 
-        if(mistakes === 0) bonus += 250;
+        const speedBonus = Math.max(0, MAX_SPEED_BONUS - elapsedSeconds);
+        const perfectBonus = mistakes === 0 ? PERFECT_BONUS : 0;
 
-        if(moves <= 15){
-          bonus += 250;
-        } else if(moves <= 20){
-          bonus += 150;
-        }
+        score += speedBonus + perfectBonus;
+        updateStats();
 
-        score += bonus;
+        const accuracy = calculateAccuracy();
 
-        scoreEl.textContent = String(score);
         finalScoreEl.textContent = String(score);
+        finalTimeEl.textContent = formatTime(elapsedSeconds);
+        finalAccuracyEl.textContent = `${accuracy}%`;
+        bestStreakEl.textContent = String(bestStreak);
 
         const mistakeText =
           mistakes === 1 ? "1 mistake" : `${mistakes} mistakes`;
 
         resultSummaryEl.textContent =
-          `You found every match in ${moves} moves with ${mistakeText}.`;
+          `10 matches completed in ${formatTime(elapsedSeconds)} with ${mistakeText}.`;
+
+        const bonuses = [`Speed bonus +${speedBonus}`];
+
+        if(perfectBonus > 0){
+          bonuses.push(`Perfect game +${perfectBonus}`);
+          resultTitleEl.textContent = "Perfect Match-Up!";
+        } else if(accuracy >= 90){
+          resultTitleEl.textContent = "Excellent Run!";
+        } else {
+          resultTitleEl.textContent = "All 10 Matches!";
+        }
+
+        bonusSummaryEl.textContent = bonuses.join(" • ");
 
         resultEl.classList.add("show");
-        setStatus("Excellent! You found all 10 matches!", "good");
+        setStatus(`Finished! Final score: ${score}`, "good");
+
+        resultEl.scrollIntoView({
+          behavior:"smooth",
+          block:"nearest"
+        });
       }
 
       function startGame(){
+        if(timerInterval){
+          window.clearInterval(timerInterval);
+          timerInterval = null;
+        }
+
         selectedDefinition = null;
         selectedDefinitionCard = null;
         matches = 0;
-        moves = 0;
         mistakes = 0;
-        score = 1000;
+        score = START_SCORE;
+        currentStreak = 0;
+        bestStreak = 0;
         locked = false;
+
+        timerStarted = false;
+        timerFinished = false;
+        startTime = 0;
+        elapsedSeconds = 0;
+
         failedImages.clear();
 
-        matchesEl.textContent = "0";
-        movesEl.textContent = "0";
-        mistakesEl.textContent = "0";
-        scoreEl.textContent = "1000";
-
+        timerEl.textContent = "0:00";
         resultEl.classList.remove("show");
         loadErrorEl.classList.remove("show");
         loadErrorEl.textContent = "";
 
+        updateStats();
         renderCards();
-        setStatus("Choose a definition to begin.");
+
+        setStatus("Choose a definition to begin. The timer starts on your first selection.");
       }
 
       restartBtn.addEventListener("click", startGame);
