@@ -50,6 +50,19 @@
       font-size:15px;
     }
 
+    .version-badge{
+      display:inline-block;
+      margin-top:3px;
+      padding:3px 9px;
+      border-radius:999px;
+      background:#fff3cd;
+      border:1px solid #e2bd48;
+      color:#725900;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.12em;
+    }
+
     .scoring-note{
       margin:4px 0 0;
       color:var(--muted);
@@ -85,6 +98,30 @@
     .status.good{ color:var(--good); }
     .status.bad{ color:var(--bad); }
     .status.neutral{ color:var(--muted); }
+
+    .combo-toast{
+      position:fixed;
+      left:50%;
+      top:22%;
+      transform:translate(-50%,-50%) scale(.8);
+      z-index:1000;
+      pointer-events:none;
+      opacity:0;
+      background:rgba(35,49,66,.94);
+      color:white;
+      padding:12px 22px;
+      border-radius:16px;
+      font-size:clamp(18px,3vw,32px);
+      font-weight:900;
+      text-align:center;
+      box-shadow:0 14px 32px rgba(15,23,42,.28);
+      transition:opacity .16s ease, transform .16s ease;
+    }
+
+    .combo-toast.show{
+      opacity:1;
+      transform:translate(-50%,-50%) scale(1);
+    }
 
     .load-error{
       display:none;
@@ -342,8 +379,9 @@
   <main class="game">
     <header>
       <h1>MATCH-UP</h1>
+      <div class="version-badge">COMPETITION SCORING • V4</div>
       <p class="instructions">Choose a definition, then choose the picture that matches it.</p>
-      <p class="scoring-note">Accuracy matters most • Build a streak • Faster finishes earn a bonus</p>
+      <p class="scoring-note">Every millisecond counts • Protect your combo • Accuracy and speed MULTIPLY your final score</p>
 
       <div class="stats">
         <div class="stat">Matches: <span id="matches">0</span>/10</div>
@@ -355,6 +393,7 @@
       </div>
     </header>
 
+    <div class="combo-toast" id="comboToast" aria-live="polite"></div>
     <div class="load-error" id="loadError"></div>
 
     <div class="status neutral" id="status" aria-live="polite">
@@ -408,22 +447,46 @@
       ];
 
       /*
-        SCORING
-        -------
-        Starting score:        1000
-        Correct match:         +100
-        Wrong guess:           -100
-        Consecutive-correct
-        streak bonus:          +20, +40, +60, then +80 max per match
-        Perfect game:          +250
-        Speed bonus:           up to +300; loses 1 point per elapsed second
+        COMPETITION SCORING V4
+
+        CORRECT ANSWERS
+        ----------------
+        Correct points grow exponentially with the current streak:
+          1st straight:    1,000
+          2nd:             1,500
+          3rd:             2,250
+          4th:             3,380
+          5th:             5,060
+          6th:             7,590
+          7th:            11,390
+          8th:            17,090
+          9th:            25,630
+          10th:           38,440
+
+        WRONG ANSWERS
+        -------------
+        A wrong answer:
+          - subtracts an escalating penalty
+          - resets the streak to zero
+          - permanently lowers the accuracy multiplier
+
+        FINAL SCORE
+        -----------
+        (raw points + perfect bonus)
+          × accuracy multiplier
+          × continuous speed multiplier
+          × 10 scoring scale
+
+        The speed multiplier uses exact elapsed milliseconds.
+        There is NO fast-time plateau: 30.100 sec beats 30.200 sec.
       */
 
-      const START_SCORE = 1000;
-      const CORRECT_POINTS = 100;
-      const WRONG_PENALTY = 100;
-      const PERFECT_BONUS = 250;
-      const MAX_SPEED_BONUS = 300;
+      const BASE_CORRECT = 1000;
+      const STREAK_GROWTH = 1.50;
+      const WRONG_BASE_PENALTY = 2000;
+      const WRONG_PENALTY_GROWTH = 1.75;
+      const PERFECT_BONUS = 10000;
+      const SCORE_SCALE = 10;
 
       const definitionCardsEl = document.getElementById("definitionCards");
       const imageCardsEl = document.getElementById("imageCards");
@@ -444,12 +507,13 @@
       const bestStreakEl = document.getElementById("bestStreak");
       const bonusSummaryEl = document.getElementById("bonusSummary");
       const loadErrorEl = document.getElementById("loadError");
+      const comboToastEl = document.getElementById("comboToast");
 
       let selectedDefinition = null;
       let selectedDefinitionCard = null;
       let matches = 0;
       let mistakes = 0;
-      let score = START_SCORE;
+      let rawScore = 0;
       let currentStreak = 0;
       let bestStreak = 0;
       let locked = false;
@@ -458,7 +522,9 @@
       let timerFinished = false;
       let startTime = 0;
       let elapsedSeconds = 0;
+      let elapsedMs = 0;
       let timerInterval = null;
+      let toastTimer = null;
 
       const failedImages = new Set();
 
@@ -473,10 +539,22 @@
         return copy;
       }
 
-      function formatTime(totalSeconds){
+      function formatTimeFromMs(ms, showMilliseconds = false){
+        const totalSeconds = Math.floor(ms / 1000);
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
-        return `${minutes}:${String(seconds).padStart(2, "0")}`;
+
+        if(!showMilliseconds){
+          const tenths = Math.floor((ms % 1000) / 100);
+          return `${minutes}:${String(seconds).padStart(2, "0")}.${tenths}`;
+        }
+
+        const milliseconds = Math.floor(ms % 1000);
+        return `${minutes}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`;
+      }
+
+      function formatNumber(value){
+        return Math.round(value).toLocaleString("en-US");
       }
 
       function startTimer(){
@@ -485,15 +563,15 @@
         timerStarted = true;
         timerFinished = false;
         startTime = performance.now();
-
-        timerInterval = window.setInterval(updateTimer, 250);
+        timerInterval = window.setInterval(updateTimer, 50);
       }
 
       function updateTimer(){
         if(!timerStarted || timerFinished) return;
 
-        elapsedSeconds = Math.floor((performance.now() - startTime) / 1000);
-        timerEl.textContent = formatTime(elapsedSeconds);
+        elapsedMs = performance.now() - startTime;
+        elapsedSeconds = elapsedMs / 1000;
+        timerEl.textContent = formatTimeFromMs(elapsedMs, false);
       }
 
       function stopTimer(){
@@ -513,24 +591,69 @@
         statusEl.className = `status ${kind}`;
       }
 
+      function showToast(message){
+        if(toastTimer){
+          window.clearTimeout(toastTimer);
+        }
+
+        comboToastEl.textContent = message;
+        comboToastEl.classList.add("show");
+
+        toastTimer = window.setTimeout(() => {
+          comboToastEl.classList.remove("show");
+        }, 750);
+      }
+
       function calculateAccuracy(){
         const attempts = matches + mistakes;
         if(attempts === 0) return 100;
+        return (matches / attempts) * 100;
+      }
 
-        return Math.round((matches / attempts) * 100);
+      function accuracyMultiplier(){
+        const a = calculateAccuracy() / 100;
+
+        // Perfect = 3.00x.
+        // A single error drops this sharply, and additional errors hurt more.
+        return 1 + 2 * Math.pow(a, 10);
+      }
+
+      function speedMultiplier(){
+        /*
+          Continuous exponential curve using exact milliseconds.
+          No plateau and no artificial time brackets.
+
+          Approximate multipliers:
+            20 sec = 2.60x
+            30 sec = 2.43x
+            45 sec = 2.21x
+            60 sec = 2.03x
+            90 sec = 1.74x
+           120 sec = 1.53x
+           180 sec = 1.27x
+        */
+        return 1 + 2 * Math.exp(-(elapsedMs / 1000) / 90);
+      }
+
+      function correctPointsFor(streak){
+        const value = BASE_CORRECT * Math.pow(STREAK_GROWTH, streak - 1);
+        return Math.round(value / 10) * 10;
+      }
+
+      function wrongPenaltyFor(mistakeNumber){
+        const value =
+          WRONG_BASE_PENALTY *
+          Math.pow(WRONG_PENALTY_GROWTH, mistakeNumber - 1);
+
+        return Math.round(value / 10) * 10;
       }
 
       function updateStats(){
         matchesEl.textContent = String(matches);
         mistakesEl.textContent = String(mistakes);
-        accuracyEl.textContent = String(calculateAccuracy());
+        accuracyEl.textContent = String(Math.round(calculateAccuracy()));
         streakEl.textContent = String(currentStreak);
-        scoreEl.textContent = String(score);
-      }
-
-      function streakBonusFor(streak){
-        if(streak <= 1) return 0;
-        return Math.min(80, (streak - 1) * 20);
+        scoreEl.textContent = formatNumber(Math.max(0, rawScore));
       }
 
       function reportImageFailure(filename){
@@ -625,9 +748,8 @@
           currentStreak += 1;
           bestStreak = Math.max(bestStreak, currentStreak);
 
-          const streakBonus = streakBonusFor(currentStreak);
-          const pointsEarned = CORRECT_POINTS + streakBonus;
-          score += pointsEarned;
+          const points = correctPointsFor(currentStreak);
+          rawScore += points;
 
           selectedDefinitionCard.classList.remove("selected");
           selectedDefinitionCard.classList.add("matched");
@@ -638,14 +760,16 @@
 
           updateStats();
 
-          if(streakBonus > 0){
-            setStatus(
-              `Correct! +${CORRECT_POINTS} and +${streakBonus} streak bonus. ${currentStreak} in a row!`,
-              "good"
-            );
+          if(currentStreak >= 3){
+            showToast(`${currentStreak} IN A ROW!  +${formatNumber(points)}`);
           } else {
-            setStatus(`Correct! +${CORRECT_POINTS} points.`, "good");
+            showToast(`+${formatNumber(points)}`);
           }
+
+          setStatus(
+            `Correct! +${formatNumber(points)} points • ${currentStreak} correct in a row.`,
+            "good"
+          );
 
           selectedDefinition = null;
           selectedDefinitionCard = null;
@@ -658,16 +782,19 @@
         }
 
         mistakes += 1;
+
+        const penalty = wrongPenaltyFor(mistakes);
+        rawScore = Math.max(0, rawScore - penalty);
         currentStreak = 0;
-        score = Math.max(0, score - WRONG_PENALTY);
 
         updateStats();
 
         locked = true;
         card.classList.add("wrong");
+        showToast(`COMBO BROKEN  −${formatNumber(penalty)}`);
 
         setStatus(
-          `Not a match. -${WRONG_PENALTY} points. Your definition is still selected.`,
+          `Not a match. −${formatNumber(penalty)} points and the streak resets. Your definition is still selected.`,
           "bad"
         );
 
@@ -680,40 +807,60 @@
       function finishGame(){
         stopTimer();
 
-        const speedBonus = Math.max(0, MAX_SPEED_BONUS - elapsedSeconds);
+        const accuracy = calculateAccuracy();
+        const accMultiplier = accuracyMultiplier();
+        const timeMultiplier = speedMultiplier();
         const perfectBonus = mistakes === 0 ? PERFECT_BONUS : 0;
 
-        score += speedBonus + perfectBonus;
-        updateStats();
+        const scoreBeforeMultipliers = Math.max(0, rawScore + perfectBonus);
+        /*
+          SCORE_SCALE preserves small millisecond differences in the final
+          integer score. This makes ties extremely unlikely without adding
+          random or arbitrary points.
+        */
+        const finalScore = Math.floor(
+          scoreBeforeMultipliers *
+          accMultiplier *
+          timeMultiplier *
+          SCORE_SCALE
+        );
 
-        const accuracy = calculateAccuracy();
-
-        finalScoreEl.textContent = String(score);
-        finalTimeEl.textContent = formatTime(elapsedSeconds);
-        finalAccuracyEl.textContent = `${accuracy}%`;
+        finalScoreEl.textContent = formatNumber(finalScore);
+        finalTimeEl.textContent = formatTimeFromMs(elapsedMs, true);
+        finalAccuracyEl.textContent = `${Math.round(accuracy)}%`;
         bestStreakEl.textContent = String(bestStreak);
 
-        const mistakeText =
-          mistakes === 1 ? "1 mistake" : `${mistakes} mistakes`;
-
         resultSummaryEl.textContent =
-          `10 matches completed in ${formatTime(elapsedSeconds)} with ${mistakeText}.`;
+          `10 matches completed in ${formatTimeFromMs(elapsedMs, true)} with ${mistakes} ${mistakes === 1 ? "mistake" : "mistakes"}.`;
 
-        const bonuses = [`Speed bonus +${speedBonus}`];
+        const parts = [
+          `Raw ${formatNumber(rawScore)}`,
+          `Accuracy ×${accMultiplier.toFixed(2)}`,
+          `Speed ×${timeMultiplier.toFixed(2)}`
+        ];
 
-        if(perfectBonus > 0){
-          bonuses.push(`Perfect game +${perfectBonus}`);
-          resultTitleEl.textContent = "Perfect Match-Up!";
-        } else if(accuracy >= 90){
-          resultTitleEl.textContent = "Excellent Run!";
-        } else {
-          resultTitleEl.textContent = "All 10 Matches!";
+        if(perfectBonus){
+          parts.splice(1, 0, `Perfect +${formatNumber(perfectBonus)}`);
         }
 
-        bonusSummaryEl.textContent = bonuses.join(" • ");
+        bonusSummaryEl.textContent = parts.join(" • ");
+
+        if(mistakes === 0 && elapsedSeconds <= 60){
+          resultTitleEl.textContent = "LIGHTNING PERFECT!";
+        } else if(mistakes === 0){
+          resultTitleEl.textContent = "PERFECT RUN!";
+        } else if(accuracy >= 90 && elapsedSeconds <= 90){
+          resultTitleEl.textContent = "TURBO FINISH!";
+        } else {
+          resultTitleEl.textContent = "ALL 10 MATCHES!";
+        }
+
+        // Show final score in the main scoreboard too.
+        scoreEl.textContent = formatNumber(finalScore);
 
         resultEl.classList.add("show");
-        setStatus(`Finished! Final score: ${score}`, "good");
+        setStatus(`Finished! Final score: ${formatNumber(finalScore)}`, "good");
+        showToast(`FINAL  ${formatNumber(finalScore)}!`);
 
         resultEl.scrollIntoView({
           behavior:"smooth",
@@ -727,11 +874,16 @@
           timerInterval = null;
         }
 
+        if(toastTimer){
+          window.clearTimeout(toastTimer);
+          toastTimer = null;
+        }
+
         selectedDefinition = null;
         selectedDefinitionCard = null;
         matches = 0;
         mistakes = 0;
-        score = START_SCORE;
+        rawScore = 0;
         currentStreak = 0;
         bestStreak = 0;
         locked = false;
@@ -740,10 +892,12 @@
         timerFinished = false;
         startTime = 0;
         elapsedSeconds = 0;
+        elapsedMs = 0;
 
         failedImages.clear();
 
-        timerEl.textContent = "0:00";
+        timerEl.textContent = "0:00.0";
+        comboToastEl.classList.remove("show");
         resultEl.classList.remove("show");
         loadErrorEl.classList.remove("show");
         loadErrorEl.textContent = "";
