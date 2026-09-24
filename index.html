@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Organ Tissue and Cell Match-Up</title>
+  <title>Match-Up</title>
 
   <style>
     :root{
@@ -85,6 +85,23 @@
       padding:7px 13px;
       font-size:14px;
       font-weight:700;
+    }
+
+    .leaderboard-jump{
+      border:0;
+      border-radius:999px;
+      padding:7px 13px;
+      background:#f6c344;
+      color:#3e3100;
+      font-weight:900;
+      font-size:12px;
+      cursor:pointer;
+      box-shadow:0 3px 8px rgba(15,23,42,.12);
+    }
+
+    .leaderboard-jump:hover{
+      filter:brightness(1.04);
+      transform:translateY(-1px);
     }
 
     .status{
@@ -331,6 +348,234 @@
       color:var(--ink) !important;
     }
 
+
+    .score-submit{
+      margin:14px auto 4px;
+      padding:14px;
+      border:2px solid #f0c24c;
+      border-radius:14px;
+      background:#fff9e8;
+      text-align:left;
+    }
+
+    .score-submit h3{
+      margin:0 0 5px;
+      text-align:center;
+    }
+
+    .score-submit p{
+      margin:4px 0 10px;
+      text-align:center;
+      font-size:13px;
+    }
+
+    .name-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .name-row input{
+      flex:1;
+      min-width:0;
+      border:1px solid #c9d0da;
+      border-radius:10px;
+      padding:10px 11px;
+      font-size:16px;
+    }
+
+    .submit-score{
+      border:0;
+      border-radius:10px;
+      padding:10px 13px;
+      background:var(--ink);
+      color:white;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .submit-score:disabled{
+      opacity:.5;
+      cursor:default;
+    }
+
+    .submission-status{
+      min-height:20px;
+      margin-top:7px !important;
+      font-weight:800;
+    }
+
+    .leaderboard{
+      max-width:900px;
+      margin:18px auto 10px;
+      background:white;
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:16px;
+      box-shadow:0 5px 18px rgba(15,23,42,.08);
+    }
+
+    .leaderboard h2{
+      margin:0;
+      text-align:center;
+      font-size:24px;
+      letter-spacing:.04em;
+    }
+
+    .leaderboard-subtitle{
+      margin:4px 0 14px;
+      color:var(--muted);
+      text-align:center;
+      font-size:13px;
+    }
+
+    .record-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:13px;
+    }
+
+    .record-card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      text-align:center;
+      background:#f8fafc;
+    }
+
+    .record-card.all-time{
+      background:#fff8dc;
+      border-color:#e7c85c;
+    }
+
+    .record-card.today{
+      background:#eef8ef;
+      border-color:#9bcba4;
+    }
+
+    .record-label{
+      display:block;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.10em;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+
+    .record-name{
+      display:block;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .record-score{
+      display:block;
+      margin-top:2px;
+      font-size:20px;
+      font-weight:900;
+    }
+
+    .record-detail{
+      display:block;
+      margin-top:3px;
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .live-title{
+      margin:12px 0 6px;
+      font-size:14px;
+      font-weight:900;
+      text-align:center;
+      letter-spacing:.08em;
+    }
+
+    .leaderboard-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td{
+      padding:8px 7px;
+      border-bottom:1px solid #e5e7eb;
+      text-align:left;
+    }
+
+    .leaderboard-table th{
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.08em;
+    }
+
+    .leaderboard-table td:nth-child(1),
+    .leaderboard-table th:nth-child(1){
+      width:42px;
+      text-align:center;
+    }
+
+    .leaderboard-table td:nth-child(3),
+    .leaderboard-table th:nth-child(3),
+    .leaderboard-table td:nth-child(4),
+    .leaderboard-table th:nth-child(4){
+      text-align:right;
+    }
+
+    .champion-row{
+      background:#f0f9f2;
+      font-weight:900;
+    }
+
+    .leaderboard-message{
+      text-align:center;
+      color:var(--muted);
+      padding:14px;
+      font-size:13px;
+    }
+
+    .leaderboard-footer{
+      margin:10px 0 0;
+      text-align:center;
+      color:var(--muted);
+      font-size:11px;
+    }
+
+    .backend-warning{
+      display:none;
+      max-width:900px;
+      margin:10px auto;
+      padding:10px 12px;
+      border:1px solid #d59c18;
+      border-radius:10px;
+      background:#fff7dd;
+      color:#674b00;
+      font-size:12px;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .backend-warning.show{
+      display:block;
+    }
+
+    @media(max-width:650px){
+      .record-grid{
+        grid-template-columns:1fr;
+      }
+
+      .name-row{
+        flex-direction:column;
+      }
+
+      .name-row input,
+      .submit-score{
+        width:100%;
+      }
+    }
+
     @media(max-width:760px){
       .game{
         width:98vw;
@@ -378,8 +623,8 @@
 <body>
   <main class="game">
     <header>
-      <h1>ORGAN TISSUE AND CELL MATCH-UP!</h1>
-      <div class="version-badge">COMPETITION SCORING • V4</div>
+      <h1>MATCH-UP</h1>
+      <div class="version-badge">LIVE LEADERBOARD • V5</div>
       <p class="instructions">Choose a definition, then choose the picture that matches it.</p>
       <p class="scoring-note">Every millisecond counts • Protect your combo • Accuracy and speed MULTIPLY your final score</p>
 
@@ -391,6 +636,7 @@
         <div class="stat">Time: <span id="timer">0:00</span></div>
         <div class="stat score-stat">Score: <span id="score">1000</span></div>
       </div>
+      <button class="leaderboard-jump" id="leaderboardJump" type="button">🏆 VIEW LEADERBOARD</button>
     </header>
 
     <div class="combo-toast" id="comboToast" aria-live="polite"></div>
@@ -426,12 +672,81 @@
       </div>
       <p id="bonusSummary" class="bonus-summary"></p>
       <p class="score">Final Score: <span id="finalScore">0</span></p>
+
+      <div class="score-submit" id="scoreSubmit">
+        <h3>🏆 Put This Score on the Leaderboard</h3>
+        <p>Use your <strong>first name + last initial</strong>, for example: <strong>Emma R.</strong></p>
+        <div class="name-row">
+          <input id="playerName" maxlength="20" autocomplete="off" placeholder="First name + last initial" aria-label="First name and last initial">
+          <button class="submit-score" id="submitScore" type="button">SUBMIT SCORE</button>
+        </div>
+        <p class="submission-status" id="submissionStatus" aria-live="polite"></p>
+      </div>
     </section>
-  </main>
+  
+    <div class="backend-warning" id="backendWarning">
+      Leaderboard backend is not connected yet. The game still works, but shared scores will appear after the Worker URL is configured.
+    </div>
+
+    <section class="leaderboard" id="leaderboardSection" aria-labelledby="leaderboardTitle">
+      <h2 id="leaderboardTitle">🏆 MATCH-UP LEADERBOARD</h2>
+      <p class="leaderboard-subtitle">Today's #1 stays until midnight • Places 2–10 stay for 30 minutes • All-time record never expires</p>
+
+      <div class="record-grid">
+        <div class="record-card all-time">
+          <span class="record-label">🏆 ALL-TIME RECORD</span>
+          <span class="record-name" id="allTimeName">—</span>
+          <span class="record-score" id="allTimeScore">No record yet</span>
+          <span class="record-detail" id="allTimeDetail"></span>
+        </div>
+
+        <div class="record-card today">
+          <span class="record-label">👑 TODAY'S CHAMPION</span>
+          <span class="record-name" id="todayName">—</span>
+          <span class="record-score" id="todayScore">No score yet</span>
+          <span class="record-detail" id="todayDetail"></span>
+        </div>
+      </div>
+
+      <div class="live-title">⚡ LIVE TOP 10</div>
+
+      <div id="leaderboardMessage" class="leaderboard-message">Loading leaderboard…</div>
+
+      <table class="leaderboard-table" id="leaderboardTable" hidden>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student</th>
+            <th>Score</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+
+      <p class="leaderboard-footer">Scores refresh automatically. Names are limited to first name + last initial.</p>
+    </section>
+
+</main>
 
   <script>
     (() => {
       "use strict";
+
+      /*
+        -----------------------------------------------------------
+        LEADERBOARD SETUP
+        -----------------------------------------------------------
+        After deploying the Cloudflare Worker, paste its URL below.
+
+        Example:
+        const LEADERBOARD_API =
+          "https://matchup-leaderboard.yourname.workers.dev";
+
+        Until you do that, the game works normally but the shared
+        leaderboard remains disabled.
+      */
+      const LEADERBOARD_API = "PASTE_YOUR_WORKER_URL_HERE";
 
       const PAIRS = [
         { definition:"A", image:"01" },
@@ -446,41 +761,7 @@
         { definition:"J", image:"10" }
       ];
 
-      /*
-        COMPETITION SCORING V4
-
-        CORRECT ANSWERS
-        ----------------
-        Correct points grow exponentially with the current streak:
-          1st straight:    1,000
-          2nd:             1,500
-          3rd:             2,250
-          4th:             3,380
-          5th:             5,060
-          6th:             7,590
-          7th:            11,390
-          8th:            17,090
-          9th:            25,630
-          10th:           38,440
-
-        WRONG ANSWERS
-        -------------
-        A wrong answer:
-          - subtracts an escalating penalty
-          - resets the streak to zero
-          - permanently lowers the accuracy multiplier
-
-        FINAL SCORE
-        -----------
-        (raw points + perfect bonus)
-          × accuracy multiplier
-          × continuous speed multiplier
-          × 10 scoring scale
-
-        The speed multiplier uses exact elapsed milliseconds.
-        There is NO fast-time plateau: 30.100 sec beats 30.200 sec.
-      */
-
+      // Competition Scoring V5
       const BASE_CORRECT = 1000;
       const STREAK_GROWTH = 1.50;
       const WRONG_BASE_PENALTY = 2000;
@@ -509,6 +790,25 @@
       const loadErrorEl = document.getElementById("loadError");
       const comboToastEl = document.getElementById("comboToast");
 
+      const leaderboardJumpEl = document.getElementById("leaderboardJump");
+      const leaderboardSectionEl = document.getElementById("leaderboardSection");
+      const leaderboardTableEl = document.getElementById("leaderboardTable");
+      const leaderboardBodyEl = document.getElementById("leaderboardBody");
+      const leaderboardMessageEl = document.getElementById("leaderboardMessage");
+      const backendWarningEl = document.getElementById("backendWarning");
+
+      const allTimeNameEl = document.getElementById("allTimeName");
+      const allTimeScoreEl = document.getElementById("allTimeScore");
+      const allTimeDetailEl = document.getElementById("allTimeDetail");
+      const todayNameEl = document.getElementById("todayName");
+      const todayScoreEl = document.getElementById("todayScore");
+      const todayDetailEl = document.getElementById("todayDetail");
+
+      const playerNameEl = document.getElementById("playerName");
+      const submitScoreEl = document.getElementById("submitScore");
+      const submissionStatusEl = document.getElementById("submissionStatus");
+      const scoreSubmitEl = document.getElementById("scoreSubmit");
+
       let selectedDefinition = null;
       let selectedDefinitionCard = null;
       let matches = 0;
@@ -521,12 +821,21 @@
       let timerStarted = false;
       let timerFinished = false;
       let startTime = 0;
-      let elapsedSeconds = 0;
       let elapsedMs = 0;
       let timerInterval = null;
       let toastTimer = null;
 
+      let attempts = [];
+      let leaderboardRunPromise = null;
+      let leaderboardRunId = null;
+      let officialResult = null;
+      let scoreSubmitted = false;
+
       const failedImages = new Set();
+
+      const leaderboardEnabled =
+        LEADERBOARD_API &&
+        !LEADERBOARD_API.includes("PASTE_YOUR_WORKER_URL_HERE");
 
       function shuffle(items){
         const copy = [...items];
@@ -540,21 +849,64 @@
       }
 
       function formatTimeFromMs(ms, showMilliseconds = false){
-        const totalSeconds = Math.floor(ms / 1000);
+        const safeMs = Math.max(0, Number(ms) || 0);
+        const totalSeconds = Math.floor(safeMs / 1000);
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
 
         if(!showMilliseconds){
-          const tenths = Math.floor((ms % 1000) / 100);
+          const tenths = Math.floor((safeMs % 1000) / 100);
           return `${minutes}:${String(seconds).padStart(2, "0")}.${tenths}`;
         }
 
-        const milliseconds = Math.floor(ms % 1000);
+        const milliseconds = Math.floor(safeMs % 1000);
         return `${minutes}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`;
       }
 
       function formatNumber(value){
-        return Math.round(value).toLocaleString("en-US");
+        return Math.round(Number(value) || 0).toLocaleString("en-US");
+      }
+
+      function calculateAccuracy(){
+        const totalAttempts = matches + mistakes;
+        if(totalAttempts === 0) return 100;
+        return (matches / totalAttempts) * 100;
+      }
+
+      function accuracyMultiplier(){
+        const a = calculateAccuracy() / 100;
+        return 1 + 2 * Math.pow(a, 10);
+      }
+
+      function speedMultiplier(ms = elapsedMs){
+        return 1 + 2 * Math.exp(-(ms / 1000) / 90);
+      }
+
+      function correctPointsFor(streak){
+        const value =
+          BASE_CORRECT *
+          Math.pow(STREAK_GROWTH, streak - 1);
+
+        return Math.round(value / 10) * 10;
+      }
+
+      function wrongPenaltyFor(mistakeNumber){
+        const value =
+          WRONG_BASE_PENALTY *
+          Math.pow(WRONG_PENALTY_GROWTH, mistakeNumber - 1);
+
+        return Math.round(value / 10) * 10;
+      }
+
+      function calculateLocalFinalScore(){
+        const perfectBonus = mistakes === 0 ? PERFECT_BONUS : 0;
+
+        return Math.floor(
+          Math.max(0, rawScore + perfectBonus) *
+          accuracyMultiplier() *
+          speedMultiplier() *
+          SCORE_SCALE
+        );
       }
 
       function startTimer(){
@@ -563,6 +915,21 @@
         timerStarted = true;
         timerFinished = false;
         startTime = performance.now();
+
+        if(leaderboardEnabled){
+          leaderboardRunPromise = apiFetch("/run", {
+            method:"POST",
+            body:JSON.stringify({})
+          }).then(data => {
+            leaderboardRunId = data.runId;
+            return data;
+          }).catch(error => {
+            console.warn("Leaderboard run could not start:", error);
+            leaderboardRunId = null;
+            return null;
+          });
+        }
+
         timerInterval = window.setInterval(updateTimer, 50);
       }
 
@@ -570,7 +937,6 @@
         if(!timerStarted || timerFinished) return;
 
         elapsedMs = performance.now() - startTime;
-        elapsedSeconds = elapsedMs / 1000;
         timerEl.textContent = formatTimeFromMs(elapsedMs, false);
       }
 
@@ -602,50 +968,6 @@
         toastTimer = window.setTimeout(() => {
           comboToastEl.classList.remove("show");
         }, 750);
-      }
-
-      function calculateAccuracy(){
-        const attempts = matches + mistakes;
-        if(attempts === 0) return 100;
-        return (matches / attempts) * 100;
-      }
-
-      function accuracyMultiplier(){
-        const a = calculateAccuracy() / 100;
-
-        // Perfect = 3.00x.
-        // A single error drops this sharply, and additional errors hurt more.
-        return 1 + 2 * Math.pow(a, 10);
-      }
-
-      function speedMultiplier(){
-        /*
-          Continuous exponential curve using exact milliseconds.
-          No plateau and no artificial time brackets.
-
-          Approximate multipliers:
-            20 sec = 2.60x
-            30 sec = 2.43x
-            45 sec = 2.21x
-            60 sec = 2.03x
-            90 sec = 1.74x
-           120 sec = 1.53x
-           180 sec = 1.27x
-        */
-        return 1 + 2 * Math.exp(-(elapsedMs / 1000) / 90);
-      }
-
-      function correctPointsFor(streak){
-        const value = BASE_CORRECT * Math.pow(STREAK_GROWTH, streak - 1);
-        return Math.round(value / 10) * 10;
-      }
-
-      function wrongPenaltyFor(mistakeNumber){
-        const value =
-          WRONG_BASE_PENALTY *
-          Math.pow(WRONG_PENALTY_GROWTH, mistakeNumber - 1);
-
-        return Math.round(value / 10) * 10;
       }
 
       function updateStats(){
@@ -740,6 +1062,13 @@
           return;
         }
 
+        const attempt = {
+          definition:selectedDefinition,
+          image:card.dataset.id
+        };
+
+        attempts.push(attempt);
+
         const isMatch =
           card.dataset.id === expectedImageFor(selectedDefinition);
 
@@ -804,68 +1133,174 @@
         }, 500);
       }
 
-      function finishGame(){
+      async function finishGame(){
         stopTimer();
 
-        const accuracy = calculateAccuracy();
-        const accMultiplier = accuracyMultiplier();
-        const timeMultiplier = speedMultiplier();
-        const perfectBonus = mistakes === 0 ? PERFECT_BONUS : 0;
+        const localFinalScore = calculateLocalFinalScore();
+        officialResult = null;
 
-        const scoreBeforeMultipliers = Math.max(0, rawScore + perfectBonus);
-        /*
-          SCORE_SCALE preserves small millisecond differences in the final
-          integer score. This makes ties extremely unlikely without adding
-          random or arbitrary points.
-        */
-        const finalScore = Math.floor(
-          scoreBeforeMultipliers *
-          accMultiplier *
-          timeMultiplier *
-          SCORE_SCALE
-        );
-
-        finalScoreEl.textContent = formatNumber(finalScore);
+        finalScoreEl.textContent = formatNumber(localFinalScore);
         finalTimeEl.textContent = formatTimeFromMs(elapsedMs, true);
-        finalAccuracyEl.textContent = `${Math.round(accuracy)}%`;
+        finalAccuracyEl.textContent = `${Math.round(calculateAccuracy())}%`;
         bestStreakEl.textContent = String(bestStreak);
 
         resultSummaryEl.textContent =
           `10 matches completed in ${formatTimeFromMs(elapsedMs, true)} with ${mistakes} ${mistakes === 1 ? "mistake" : "mistakes"}.`;
 
-        const parts = [
+        const localPerfect = mistakes === 0 ? PERFECT_BONUS : 0;
+        const localParts = [
           `Raw ${formatNumber(rawScore)}`,
-          `Accuracy ×${accMultiplier.toFixed(2)}`,
-          `Speed ×${timeMultiplier.toFixed(2)}`
+          `Accuracy ×${accuracyMultiplier().toFixed(2)}`,
+          `Speed ×${speedMultiplier().toFixed(2)}`
         ];
 
-        if(perfectBonus){
-          parts.splice(1, 0, `Perfect +${formatNumber(perfectBonus)}`);
+        if(localPerfect){
+          localParts.splice(1, 0, `Perfect +${formatNumber(localPerfect)}`);
         }
 
-        bonusSummaryEl.textContent = parts.join(" • ");
+        bonusSummaryEl.textContent = localParts.join(" • ");
 
-        if(mistakes === 0 && elapsedSeconds <= 60){
+        if(mistakes === 0 && elapsedMs <= 60000){
           resultTitleEl.textContent = "LIGHTNING PERFECT!";
         } else if(mistakes === 0){
           resultTitleEl.textContent = "PERFECT RUN!";
-        } else if(accuracy >= 90 && elapsedSeconds <= 90){
+        } else if(calculateAccuracy() >= 90 && elapsedMs <= 90000){
           resultTitleEl.textContent = "TURBO FINISH!";
         } else {
           resultTitleEl.textContent = "ALL 10 MATCHES!";
         }
 
-        // Show final score in the main scoreboard too.
-        scoreEl.textContent = formatNumber(finalScore);
-
+        scoreEl.textContent = formatNumber(localFinalScore);
         resultEl.classList.add("show");
-        setStatus(`Finished! Final score: ${formatNumber(finalScore)}`, "good");
-        showToast(`FINAL  ${formatNumber(finalScore)}!`);
+
+        if(leaderboardEnabled){
+          submissionStatusEl.textContent = "Verifying your official score…";
+          submitScoreEl.disabled = true;
+
+          try{
+            if(leaderboardRunPromise){
+              await leaderboardRunPromise;
+            }
+
+            if(!leaderboardRunId){
+              throw new Error("The leaderboard run did not start.");
+            }
+
+            const data = await apiFetch("/finish", {
+              method:"POST",
+              body:JSON.stringify({
+                runId:leaderboardRunId,
+                attempts
+              })
+            });
+
+            officialResult = data;
+
+            finalScoreEl.textContent = formatNumber(data.score);
+            scoreEl.textContent = formatNumber(data.score);
+            finalTimeEl.textContent = formatTimeFromMs(data.elapsedMs, true);
+            finalAccuracyEl.textContent = `${Math.round(data.accuracy)}%`;
+            bestStreakEl.textContent = String(data.bestStreak);
+
+            bonusSummaryEl.textContent =
+              `Official server score • Raw ${formatNumber(data.rawScore)} • Accuracy ×${data.accuracyMultiplier.toFixed(2)} • Speed ×${data.speedMultiplier.toFixed(2)}`;
+
+            if(data.leaderboardEligible){
+              submissionStatusEl.textContent =
+                "Official score verified. Enter your name to submit it.";
+              submitScoreEl.disabled = false;
+            }else{
+              submissionStatusEl.textContent =
+                "Official score verified, but this run is too fast to qualify for the leaderboard.";
+              submitScoreEl.disabled = true;
+            }
+
+            setStatus(
+              `Official score verified: ${formatNumber(data.score)}`,
+              "good"
+            );
+          }catch(error){
+            console.error(error);
+            submissionStatusEl.textContent =
+              "Leaderboard verification failed. Your game score is still shown above.";
+            submitScoreEl.disabled = true;
+          }
+        } else {
+          submissionStatusEl.textContent =
+            "Leaderboard backend is not connected yet.";
+          submitScoreEl.disabled = true;
+        }
 
         resultEl.scrollIntoView({
           behavior:"smooth",
           block:"nearest"
         });
+      }
+
+      function normalizeName(value){
+        return value
+          .trim()
+          .replace(/\s+/g, " ");
+      }
+
+      async function submitScore(){
+        if(!leaderboardEnabled || !officialResult || scoreSubmitted){
+          return;
+        }
+
+        const displayName = normalizeName(playerNameEl.value);
+
+        if(displayName.length < 2 || displayName.length > 20){
+          submissionStatusEl.textContent =
+            "Please enter your first name + last initial (20 characters maximum).";
+          return;
+        }
+
+        if(!/^[A-Za-zÀ-ÖØ-öø-ÿ'’.\- ]+$/.test(displayName)){
+          submissionStatusEl.textContent =
+            "Please use letters, spaces, apostrophes, hyphens, and a period only.";
+          return;
+        }
+
+        submitScoreEl.disabled = true;
+        submissionStatusEl.textContent = "Submitting score…";
+
+        try{
+          const data = await apiFetch("/submit", {
+            method:"POST",
+            body:JSON.stringify({
+              runId:leaderboardRunId,
+              displayName
+            })
+          });
+
+          scoreSubmitted = true;
+          playerNameEl.disabled = true;
+          submitScoreEl.textContent = "SCORE SUBMITTED";
+
+          if(data.isAllTimeRecord){
+            submissionStatusEl.textContent =
+              "🏆 NEW ALL-TIME RECORD!";
+          } else if(data.isDailyChampion){
+            submissionStatusEl.textContent =
+              "👑 You are today's champion!";
+          } else {
+            submissionStatusEl.textContent =
+              `⚡ Score submitted. Current live rank: #${data.rank || "—"}`;
+          }
+
+          await loadLeaderboard();
+
+          leaderboardSectionEl.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+          });
+        }catch(error){
+          console.error(error);
+          submitScoreEl.disabled = false;
+          submissionStatusEl.textContent =
+            error.message || "Score submission failed. Please try again.";
+        }
       }
 
       function startGame(){
@@ -891,8 +1326,13 @@
         timerStarted = false;
         timerFinished = false;
         startTime = 0;
-        elapsedSeconds = 0;
         elapsedMs = 0;
+
+        attempts = [];
+        leaderboardRunPromise = null;
+        leaderboardRunId = null;
+        officialResult = null;
+        scoreSubmitted = false;
 
         failedImages.clear();
 
@@ -902,14 +1342,154 @@
         loadErrorEl.classList.remove("show");
         loadErrorEl.textContent = "";
 
+        playerNameEl.value = "";
+        playerNameEl.disabled = false;
+        submitScoreEl.disabled = true;
+        submitScoreEl.textContent = "SUBMIT SCORE";
+        submissionStatusEl.textContent = "";
+
         updateStats();
         renderCards();
 
         setStatus("Choose a definition to begin. The timer starts on your first selection.");
       }
 
+      async function apiFetch(path, options = {}){
+        const response = await fetch(`${LEADERBOARD_API}${path}`, {
+          ...options,
+          headers:{
+            "Content-Type":"application/json",
+            ...(options.headers || {})
+          }
+        });
+
+        let data = null;
+
+        try{
+          data = await response.json();
+        }catch{
+          data = {};
+        }
+
+        if(!response.ok){
+          throw new Error(data.error || `Leaderboard request failed (${response.status}).`);
+        }
+
+        return data;
+      }
+
+      function setRecordCard(prefix, record, emptyText){
+        const nameEl =
+          prefix === "allTime" ? allTimeNameEl : todayNameEl;
+        const scoreCardEl =
+          prefix === "allTime" ? allTimeScoreEl : todayScoreEl;
+        const detailEl =
+          prefix === "allTime" ? allTimeDetailEl : todayDetailEl;
+
+        if(!record){
+          nameEl.textContent = "—";
+          scoreCardEl.textContent = emptyText;
+          detailEl.textContent = "";
+          return;
+        }
+
+        nameEl.textContent = record.displayName;
+        scoreCardEl.textContent = formatNumber(record.score);
+        detailEl.textContent =
+          `${formatTimeFromMs(record.elapsedMs, true)} • ${Math.round(record.accuracy)}% accuracy`;
+      }
+
+      async function loadLeaderboard(){
+        if(!leaderboardEnabled){
+          backendWarningEl.classList.add("show");
+          leaderboardMessageEl.textContent =
+            "Leaderboard will appear after the backend URL is configured.";
+          leaderboardTableEl.hidden = true;
+          return;
+        }
+
+        try{
+          const data = await apiFetch("/leaderboard", {
+            method:"GET"
+          });
+
+          backendWarningEl.classList.remove("show");
+
+          setRecordCard(
+            "allTime",
+            data.allTime,
+            "No all-time record yet"
+          );
+
+          setRecordCard(
+            "today",
+            data.todayChampion,
+            "No score today yet"
+          );
+
+          leaderboardBodyEl.replaceChildren();
+
+          if(!data.top10 || data.top10.length === 0){
+            leaderboardMessageEl.textContent =
+              "No live scores yet. Be the first!";
+            leaderboardTableEl.hidden = true;
+            return;
+          }
+
+          data.top10.forEach((entry, index) => {
+            const row = document.createElement("tr");
+
+            if(entry.isChampion){
+              row.classList.add("champion-row");
+            }
+
+            const rank = document.createElement("td");
+            const name = document.createElement("td");
+            const score = document.createElement("td");
+            const time = document.createElement("td");
+
+            rank.textContent =
+              entry.isChampion ? "👑" : String(index + 1);
+
+            name.textContent = entry.displayName;
+            score.textContent = formatNumber(entry.score);
+            time.textContent = formatTimeFromMs(entry.elapsedMs, true);
+
+            row.append(rank, name, score, time);
+            leaderboardBodyEl.appendChild(row);
+          });
+
+          leaderboardMessageEl.textContent = "";
+          leaderboardTableEl.hidden = false;
+        }catch(error){
+          console.error(error);
+          leaderboardMessageEl.textContent =
+            "Leaderboard is temporarily unavailable.";
+          leaderboardTableEl.hidden = true;
+        }
+      }
+
       restartBtn.addEventListener("click", startGame);
+      submitScoreEl.addEventListener("click", submitScore);
+
+      playerNameEl.addEventListener("keydown", event => {
+        if(event.key === "Enter"){
+          submitScore();
+        }
+      });
+
+      leaderboardJumpEl.addEventListener("click", () => {
+        leaderboardSectionEl.scrollIntoView({
+          behavior:"smooth",
+          block:"start"
+        });
+      });
+
       startGame();
+      loadLeaderboard();
+
+      // Keep the board fresh while students are watching it.
+      window.setInterval(loadLeaderboard, 20000);
     })();
   </script>
 </body>

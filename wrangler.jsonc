@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "matchup-leaderboard",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-24",
+  "vars": {
+    "ALLOWED_ORIGIN": "https://sliggett-hash.github.io"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "matchup-leaderboard",
+      "database_id": "PASTE_D1_DATABASE_ID_HERE"
+    }
+  ]
+}
