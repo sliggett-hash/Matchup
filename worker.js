@@ -801,18 +801,22 @@ async function submitScore(env, body){
 async function cleanup(env, now = Date.now(), today = dayKey(now)){
   /*
     Yesterday's #1 must disappear at the end of the day even if it was
-    posted less than 30 minutes before midnight. Delete those champion
-    score rows first, then remove the old champion pointers.
+    posted less than 30 minutes before midnight.
+
+    First mark old champions as expired, then remove their champion
+    pointers. The normal expired-score cleanup below can then safely
+    delete those score rows without violating the foreign-key relation.
   */
   await env.DB.prepare(`
-    DELETE FROM scores
+    UPDATE scores
+    SET expires_at = ?
     WHERE id IN (
       SELECT score_id
       FROM daily_champions
       WHERE day_key <> ?
     )
   `)
-    .bind(today)
+    .bind(now, today)
     .run();
 
   await env.DB.prepare(`
